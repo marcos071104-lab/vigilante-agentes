@@ -1,0 +1,30 @@
+# Vigilante del PC (repo PUBLICO: minutos de Actions ilimitados). Cada 30 min comprueba el latido del bot de agentes
+# y avisa por Telegram si el PC lleva >25 min sin latido. Solo biblioteca estandar, 0 tokens.
+# Secrets (Settings > Secrets and variables > Actions): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID. NADA mas.
+# Los logs de un repo publico son publicos: --silencioso evita imprimir el estado del PC; los Secrets quedan enmascarados.
+name: Vigilante PC
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+concurrency:
+  group: vigilante-pc
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Vigilar PC
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python nube/vigilante_pc.py --tolerancia 25 --silencioso

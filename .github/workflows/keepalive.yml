@@ -1,0 +1,32 @@
+# Keepalive: GitHub DESACTIVA los workflows programados de un repo sin actividad en 60 dias (y el vigilante dejaria
+# de vigilar sin avisar). Los dias 1 y 15 de cada mes: si el ultimo commit tiene mas de 40 dias, hace un commit
+# vacio (cuenta como actividad) y, por si GitHub ya lo hubiera desactivado, reactiva el vigilante.
+# No usa Secrets. Si algun dia ves el vigilante parado: Actions > Vigilante PC > Enable workflow.
+name: Keepalive
+on:
+  schedule:
+    - cron: "17 4 1,15 * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write   # solo para el commit vacio
+  actions: write    # solo para reactivar el vigilante
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit vacio si hace falta
+        run: |
+          edad=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
+          echo "Ultimo commit hace ${edad} dias"
+          if [ "$edad" -ge 40 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "keepalive: evita la desactivacion por inactividad"
+            git push
+          fi
+      - name: Reactivar el vigilante si estaba desactivado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable vigilante_pc.yml || true

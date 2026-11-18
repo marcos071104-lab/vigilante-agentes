@@ -1,0 +1,25 @@
+# LISTA BLANCA: se ignora todo salvo lo que se permite expresamente.
+*
+!/.gitignore
+!/README.md
+!/nube/
+!/nube/vigilante_pc.py
+!/.github/
+!/.github/workflows/
+!/.github/workflows/vigilante_pc.yml
+!/.github/workflows/keepalive.yml
+!/tests/
+!/tests/test_vigilante.py
+!/tests/test_sin_secretos.py
+
+# Lo de abajo SIEMPRE gana: nunca se sube.
+config.json
+*.bak*
+*.token
+token*.txt
+chat_id*.txt
+.env
+.env.*
+estado*.json
+__pycache__/
+*.pyc
